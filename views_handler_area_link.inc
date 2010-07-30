@@ -102,10 +102,13 @@ class views_handler_area_link extends views_handler_area {
     return '';
   }
 
-  // This is a shameless ripoff of views_handler_field's token rendering. Since
-  // we're not a field, though, we only need arguments and links will always be
-  // passing through XSS filtering. Makes things simpler.
-
+  /**
+   * Gets appropriate views replacement tokens for this handler.
+   *
+   * This code is largely based on views_handler_field's token rendering, but
+   * we only care about arguments.  The render() method's link generation
+   * handles XSS for us.
+   */
   function get_render_tokens() {
     $tokens = array();
     if (!empty($this->view->build_info['substitutions'])) {
