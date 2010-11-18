@@ -27,10 +27,10 @@ class views_handler_area_link extends views_handler_area {
       '#default_value' => $this->options['path'],
       '#description' => t('The Drupal path or full URL to which to link'),
     );
-    $form['query'] = array(
+    $form['querystring'] = array(
       '#type' => 'textfield',
       '#title' => t('Link querystring'),
-      '#default_value' => $this->options['query'],
+      '#default_value' => $this->options['querystring'],
       '#description' => t('The query parameters that follow the full path'),
     );
     $form['anchor'] = array(
@@ -46,7 +46,6 @@ class views_handler_area_link extends views_handler_area {
       '#description' => t('A custom CSS class to add to the link'),
     );
 
-
     $count = 0; // This lets us prepare the key as we want it printed.
     foreach ($this->view->display_handler->get_handlers('argument') as $arg => $handler) {
       $options[t('Arguments')]['%' . ++$count] = t('@argument title', array('@argument' => $handler->ui_name()));
@@ -57,23 +56,21 @@ class views_handler_area_link extends views_handler_area {
       $output = t('<p>The following substitution patterns are available for this display based on the arguments for this view. Use the pattern shown on the left to display the value indicated on the right.</p>');
       foreach (array_keys($options) as $type) {
         if (!empty($options[$type])) {
-          $items = array();
+          $vars = array('title' => $type);
           foreach ($options[$type] as $key => $value) {
-            $items[] = $key . ' == ' . $value;
+            $vars['items'][] = $key . ' == ' . $value;
           }
-          $output .= theme('item_list', $items, $type);
+          $output .= theme('item_list', $vars);
         }
       }
 
-      // This construct uses 'hidden' and not markup because process doesn't
-      // run. It also has an extra div because the dependency wants to hide
-      // the parent in situations like this, so we need a second div to
-      // make this work.
       $form['help'] = array(
-        '#type' => 'hidden',
-        '#id' => 'views-tokens-help',
-        '#prefix' => '<div><fieldset id="views-tokens-help"><legend>' . t('Replacement patterns') . '</legend>' . $output . '</fieldset></div>',
-        '#process' => array('views_process_dependency'),
+        '#type' => 'fieldset',
+        '#title' => t('Replacement patterns'),
+      );
+      $form['help']['help'] = array(
+        '#type' => 'markup',
+        '#markup' => $output,
       );
     }
   }
@@ -87,8 +84,17 @@ class views_handler_area_link extends views_handler_area {
 
       $tokens = $this->get_render_tokens();
       $link_options = array();
-      if (!empty($this->options['query'])) {
-        $link_options['query'] = strtr($this->options['query'], $tokens);
+      if (!empty($this->options['querystring'])) {
+        // This is an ugly way to do it, but Drupal 7 now takes an array for
+        // query instead of a string.  That's good, but makes our string field
+        // not work.  This should get switched to a multi-value interface of
+        // some kind instead of ugly string parsing. @todo
+        $querystring = strtr($this->options['querystring'], $tokens);
+        foreach (explode('&', $querystring) as $fragment) {
+          list($key, $value) = explode('=', $fragment);
+          $query[$key] = $value;
+        }
+        $link_options['query'] =$query;
       }
       if (!empty($this->options['anchor'])) {
         $link_options['anchor'] = strtr($this->options['anchor'], $tokens);
