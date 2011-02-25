@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 class views_handler_area_link extends views_handler_area {
 
