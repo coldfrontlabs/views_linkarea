@@ -101,17 +101,13 @@ class views_handler_area_link extends views_handler_area {
         // not work.  This should get switched to a multi-value interface of
         // some kind instead of ugly string parsing. @todo
         $querystring = strtr($this->options['querystring'], $tokens);
-        foreach (explode('&', $querystring) as $fragment) {
-          list($key, $value) = explode('=', $fragment);
-          $query[$key] = $value;
-        }
-        $link_options['query'] =$query;
+        $link_options['query'] = drupal_get_query_array($querystring);
       }
       if (!empty($this->options['anchor'])) {
         $link_options['anchor'] = strtr($this->options['anchor'], $tokens);
       }
       if (!empty($this->options['class'])) {
-        $link_options['attributes'] = array('class' => strtr($this->options['class'], $tokens));
+        $link_options['attributes'] = array('class' => explode(' ', strtr($this->options['class'], $tokens)));
       }
 
       return l(strtr($this->options['text'], $tokens), $path, $link_options);
