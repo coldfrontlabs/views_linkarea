@@ -5,6 +5,7 @@ class views_handler_area_link extends views_handler_area {
   function option_definition() {
     $options = parent::option_definition();
     $options['text'] = array('default' => '', 'translatable' => TRUE);
+    $options['html'] = array('default' => 0);
     $options['path'] = array('default' => '');
     $options['querystring'] = array('default' => '');
     $options['anchor'] = array('default' => '');
@@ -25,6 +26,12 @@ class views_handler_area_link extends views_handler_area {
       '#title' => t('Link text'),
       '#default_value' => $this->options['text'],
       '#description' => t('The text of the link'),
+    );
+    $form['html'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Display link text as HTML'),
+      '#default_value' => $this->options['html'],
+      '#description' => t('Show link text as HTML instead of plain text.'),
     );
     $form['path'] = array(
       '#type' => 'textfield',
@@ -169,6 +176,9 @@ class views_handler_area_link extends views_handler_area {
 
     $tokens = $this->get_render_tokens();
 
+    // Replace any tokens in the text.
+    $text = strtr($this->options['text'], $tokens);
+
     // Replace any tokens in the path.
     $path = strtr($this->options['path'], $tokens);
 
@@ -243,10 +253,16 @@ class views_handler_area_link extends views_handler_area {
       }
     }
 
-    // Make sure all HTML entities are decoded before passing to l().
-    while (decode_entities($link_properties['text']) != $link_properties['text']) {
+    if ($this->options['html']) {
+      $link_properties['text'] = filter_xss_admin($link_properties['text']);
+      $link_properties['html'] = TRUE;
+    }
+    else {
+      // Make sure all HTML entities are decoded before passing to l().
+      while (decode_entities($link_properties['text']) != $link_properties['text']) {
 
-      $link_properties['text'] = decode_entities($link_properties['text']);
+        $link_properties['text'] = decode_entities($link_properties['text']);
+      }
     }
 
     return l($link_properties['text'], $link_properties['path'], $link_properties);
