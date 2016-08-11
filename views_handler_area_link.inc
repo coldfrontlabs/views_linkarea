@@ -254,18 +254,18 @@ class views_handler_area_link extends views_handler_area {
     }
 
     if ($this->options['html']) {
-      $link_properties['text'] = filter_xss_admin($link_properties['text']);
+      $text = filter_xss_admin($text);
       $link_properties['html'] = TRUE;
     }
     else {
       // Make sure all HTML entities are decoded before passing to l().
-      while (decode_entities($link_properties['text']) != $link_properties['text']) {
+      while (decode_entities($text) != $text) {
 
-        $link_properties['text'] = decode_entities($link_properties['text']);
+        $text = decode_entities($text);
       }
     }
 
-    return l($link_properties['text'], $link_properties['path'], $link_properties);
+    return l($text, $path, $link_properties);
   }
 
   /**
