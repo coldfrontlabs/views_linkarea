@@ -9,6 +9,7 @@ class views_handler_area_link extends views_handler_area {
     $options['querystring'] = array('default' => '');
     $options['anchor'] = array('default' => '');
     $options['class'] = array('default' => '');
+    $options['return'] = array('default' => FALSE);
     $options['title'] = array('default' => '');
     $options['rel'] = array('default' => '');
     $options['target'] = array('default' => '');
@@ -36,6 +37,12 @@ class views_handler_area_link extends views_handler_area {
       '#title' => t('Link querystring'),
       '#default_value' => $this->options['querystring'],
       '#description' => t('The query parameters that follow the full path'),
+    );
+    $form['return'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Set destination as the current page'),
+      '#default_value' => $this->options['return'],
+      '#description' => t('If the link leads to a form, this will redirect the user to the view when the form is submitted. This will override any destination set in the querystring option above.'),
     );
     $form['anchor'] = array(
       '#type' => 'textfield',
@@ -187,6 +194,11 @@ class views_handler_area_link extends views_handler_area {
       // some kind instead of ugly string parsing. @todo
       $querystring = strtr($this->options['querystring'], $tokens);
       $link_properties['query'] = drupal_get_query_array($querystring);
+    }
+
+    if (!empty($this->options['return'])) {
+      $destination = drupal_get_destination();
+      $link_properties['query']['destination'] = $destination['destination'];
     }
 
     // Grab all of our options and tokenize them if necessary.
