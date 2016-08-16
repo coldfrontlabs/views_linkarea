@@ -219,7 +219,12 @@ class views_handler_area_link extends views_handler_area {
         continue;
       }
 
-      $link_properties[$key] = $this->options[$key];
+      if ('anchor' == $key) {
+        $link_properties['fragment'] = $this->options[$key];
+      }
+      else {
+        $link_properties[$key] = $this->options[$key];
+      }
 
       // Apply the argument substitutions.
       if (!empty($tokens)) {
